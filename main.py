@@ -2,6 +2,7 @@ from time import localtime, sleep
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from threading import Thread, active_count 
 
 import sys 
@@ -10,25 +11,17 @@ class MyWindow(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.timer_deployment()
         self.paused = False
         self.stopped = False 
         self.iniUI()
 
-
-    def timer_deployment(self): 
-        self.min = 25
-        self.sec = 0
-
-
     def iniUI(self): 
         self.setGeometry(500, 200, 600, 600)
-        self.setWindowTitle('Brutal Lock')
-        # win.setWindowIcon
+        self.setWindowTitle('BarbariCLock: Execute them ALL!')
+        self.setWindowIcon(QIcon('icon.png'))
 
         self.label = QtWidgets.QLabel(self)
-        self.label.setText(f'{self.min} : {self.sec}')
-        self.label.setAlignment(Qt.AlignVCenter)
+        self.label.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
 
         self.start_button = QPushButton('Start', self)
         self.start_button.clicked.connect(lambda: self.ti_thread(tt = True))
@@ -57,29 +50,31 @@ class MyWindow(QWidget):
             self.stopped = bool(1 - self.stopped)
 
 
-    def timer(self):
+    def timer(self, min, sec):
         print(active_count())
         while self.isVisible():
-            if self.min < 0 or self.stopped:
+            if min < 0 or self.stopped:
                 break
-
-            if self.sec == 0: 
-                self.min -= 1
-                self.sec = 59
+            if sec == 0: 
+                min -= 1
+                sec = 59
 
             sleep(1)
             if self.paused == True:
                 continue
-            self.label.setText(f'{self.min:02d}:{self.sec:02d}')
-            self.sec -= 1
+            self.label.setText(f'{min:02d}:{sec:02d}')
+            sec -= 1
         
+
+    def pomadoro(self): 
+        self.timer(25, 0)
         self.stopped = False 
-        self.timer_deployment()
+        self.timer(5,0)
         self.clock()
 
 
     def ti_thread(self, tt : bool):
-        th_timer = Thread(target=self.timer)
+        th_timer = Thread(target=self.pomadoro)
         if th_timer.is_alive == True: 
             self.timer()
         if tt and th_timer.is_alive != True:
